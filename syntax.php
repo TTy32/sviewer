@@ -39,9 +39,9 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
   }
   function getInfo(){
     return array(
-      'author' => 'Ikuo Obataya',
-      'email'  => 'I.Obataya@gmail.com',
-      'date'  => '2008-07-03',
+      'author' => 'TTy32 (Original by Ikuo Obataya)',
+      'email'  => 'randy@tty32.org',
+      'date'  => '2011-04-15',
       'name'  => 'Airtight Simpleviewer plugin',
       'desc'  => 'Create Simpleviewer by www.airtightinteractive.com
       <sviewer>
@@ -67,7 +67,7 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
     switch ($state) {
       case DOKU_LEXER_UNMATCHED :
         $m = preg_match_all($this->attrPattern,$match,$cmd);
-        
+
         if ($m!=1){
           $width  = $this->getConf('width');
           $height = $this->getConf('height');
@@ -99,17 +99,18 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
         if(empty($align)) $align = $this->getConf('align');
 
 		// By TTy32
-		if(empty($option_galleryStyle)) $option_galleryStyle = "MODERN";
-		if(empty($option_textColor)) $option_textColor = 'FFFFFF';
-		if(empty($option_frameColor)) $option_frameColor = "FFFFFF";
-		if(empty($option_frameWidth)) $option_frameWidth = "20";
-		if(empty($option_thumbPosition)) $option_thumbPosition = "LEFT";
-		if(empty($option_thumbColumns)) $option_thumbColumns = "3";
-		if(empty($option_thumbRows)) $option_thumbRows = "3";
-		if(empty($option_showOpenButton)) $option_showOpenButton = "TRUE";
-		if(empty($option_showFullscreenButton)) $option_showFullscreenButton = "TRUE";
-		if(empty($option_maxImageWidth)) $option_maxImageWidth = "640";
-		if(empty($option_maxImageHeight)) $option_maxImageHeight = "640";
+		if(empty($option_galleryStyle)) $option_galleryStyle = $this->getConf('galleryStyle');
+		if(empty($option_textColor)) $option_textColor = $this->getConf('textColor');
+		if(empty($option_frameColor)) $option_frameColor = $this->getConf('frameColor');
+		if(empty($option_frameWidth)) $option_frameWidth = $this->getConf('frameWidth');
+		if(empty($option_thumbPosition)) $option_thumbPosition = $this->getConf('thumbPosition');
+		if(empty($option_thumbColumns)) $option_thumbColumns = $this->getConf('thumbColumns');
+		if(empty($option_thumbRows)) $option_thumbRows = $this->getConf('thumbRows');
+		if(empty($option_showOpenButton)) $option_showOpenButton = $this->getConf('showOpenButton');
+		if(empty($option_showFullscreenButton)) $option_showFullscreenButton = $this->getConf('showFullscreenButton');
+		if(empty($option_maxImageWidth)) $option_maxImageWidth = $this->getConf('maxImageWidth');
+		if(empty($option_maxImageHeight)) $option_maxImageHeight = $this->getConf('maxImageHeight');
+		if(empty($option_title)) $option_title = $this->getConf('title');
 		
 		
         $sz = preg_match_all($this->listPattern,$match,$img);
@@ -248,7 +249,7 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
 			<param name="allowScriptAccess" value="sameDomain" />
 			<param name="allowFullScreen" value="true" />
 			
-			<param name="movie" value="%s?galleryURL=%s" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="scale" value="exactfit" /><param name="salign" value="t" /><param name="wmode" value="transparent" /><param name="bgcolor" value="%s" />	<embed src="%s?galleryURL=%s" menu="false" quality="best" scale="exactfit" salign="t" wmode="transparent" bgcolor="%s" width="%s" height="%s" name="header1" align="%s" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.adobe.com/go/getflashplayer" />
+			<param name="movie" value="%s?galleryURL=%s" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="scale" value="exactfit" /><param name="salign" value="t" /><param name="wmode" value="transparent" /><param name="bgcolor" value="" />	<embed src="%s?galleryURL=%s" menu="false" quality="best" scale="exactfit" salign="t" wmode="transparent" bgcolor="" width="%s" height="%s" name="header1" align="%s" allowScriptAccess="sameDomain" allowFullScreen="true" type="application/x-shockwave-flash" pluginspage="http://www.adobe.com/go/getflashplayer" />
 			</object>
 
 			</div>',
@@ -258,10 +259,8 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
 			$align,
 			$this->swfLoc,
 			$fetchPath,
-			$this->getConf('bgcolor'),
 			$this->swfLoc,
 			$fetchPath,
-			$this->getConf('bgcolor'),
 			$width,
 			$height,
 			$align);
@@ -270,6 +269,30 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
       case DOKU_LEXER_EXIT: break;
     }
     return true;
+  }
+ /**
+  * Build <image> element by fetch url and caption
+  */
+  function getImageElement($url,$caption){
+	$path = $paths[$j];
+	$url = $urls[$j];
+	$title = (empty($caption))?$path:$caption;
+	if(!file_exists($path))continue;
+	$jm      = new JpegMeta($path);
+	$f       = @$jm->getResizeRatio($width,$height);
+	$info    = @$jm->getBasicInfo();
+	$rwidth  = floor($info['Width']*$f);
+	$rheight = floor($info['Height']*$f);
+	
+	// By TTy32
+	$xml.='<image '.NL;
+	$xml.='imageURL="'.$url.'" ';
+	$xml.='thumbURL="'.$url.'" ';
+	$xml.='linkURL="" ';
+	$xml.='linkTarget="" >'.NL;
+	$xml.='  <caption>'.$title.'</caption>'.NL;
+	$xml.='</image>'.NL;
+    return $xml;
   }
 
  /**
