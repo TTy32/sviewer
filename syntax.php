@@ -1,62 +1,64 @@
 <?php
 /*
-description : Display Airtight AutoViewer
-author      : Ikuo Obataya
-email       : I.Obataya@gmail.com
-lastupdate  : 2008-07-03
+description : Display Airtight Simpleviewer
+author      : TTy32 (Original by Ikuo Obataya)
+email       : randy@tty32.org
+lastupdate  : 2011-04-15
 depends     : cache (2008-03-22 or later)
 license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
 */
 
 if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../').'/');
   require_once(DOKU_INC.'inc/init.php');
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
+if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/'); 
   require_once(DOKU_PLUGIN.'syntax.php');
 if (!class_exists('JpegMeta')) @require(DOKU_INC.'inc/JpegMeta.php');
 
 if(!file_exists(DOKU_PLUGIN.'cache/plugin_cache.php')){
-  echo '<b>AViewer plugin requires <a href="http://wiki.symplus.co.jp/computer/en/cache_plugin" target="_blank">cache plugin.</b>';
+  echo '<b>sviewer plugin requires <a href="http://wiki.symplus.co.jp/computer/en/cache_plugin" target="_blank">cache plugin.</b>';
   exit;
 }
 if (!class_exists('plugin_cache')) @require(DOKU_PLUGIN.'cache/plugin_cache.php');
 
-class syntax_plugin_aviewer extends DokuWiki_Syntax_Plugin {
+class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
   var $xmlCache;
   var $attrPattern;
   var $listPattern;
   var $swfLoc;
   var $swfObjPath;
   // Constructor
-  function syntax_plugin_aviewer(){
-    $this->xmlCache    = new plugin_cache("aviewer",'',"xml");
-    $this->attrPattern = '/(\d+) (\d+)( left| right| noalign)?>|(clear_cache)>|(remove_dir)>/';
+  function syntax_plugin_sviewer(){
+    $this->xmlCache    = new plugin_cache("sviewer",'',"xml");
+    
+	//By TTy32
+	$this->attrPattern = '/(\d+) (\d+)( left| right| noalign)( modern| compact| classic) (\w+) (\w+) (\d*)( left| right| bottom| top| none) (\d*) (\d*)( true| false)( true| false) (\d+) (\d+) "([^"]*)"?>|(clear_cache)>|(remove_dir)>/';
     
     $this->listPattern = '/\{\{([^}|]+)\|?([^}]*)\}\}/';
-    $this->swfLoc      = DOKU_BASE.'lib/plugins/aviewer/autoviewer/autoviewer.swf';
-    $this->swfJsPath   = DOKU_BASE.'lib/plugins/aviewer/autoviewer/swfobject.js';
+    $this->swfLoc      = DOKU_BASE.'lib/plugins/sviewer/simpleviewer/simpleviewer.swf';
+    $this->swfJsPath   = DOKU_BASE.'lib/plugins/sviewer/simpleviewer/simpleviewer.js';
   }
   function getInfo(){
     return array(
       'author' => 'Ikuo Obataya',
       'email'  => 'I.Obataya@gmail.com',
       'date'  => '2008-07-03',
-      'name'  => 'Airtight AutoViewer plugin',
-      'desc'  => 'Create AutoViewer by www.airtightinteractive.com
-      <aviewer>
+      'name'  => 'Airtight Simpleviewer plugin',
+      'desc'  => 'Create Simpleviewer by www.airtightinteractive.com
+      <sviewer>
       image files or media namespace
-      </aviewer>',
-      'url'  => 'http://wiki.symplus.co.jp/computer/en/aviewer_plugin',
+      </sviewer>',
+      'url'  => 'http://wiki.symplus.co.jp/computer/en/sviewer_plugin',
     );
   }
   function getType(){  return 'protected';  }
   function getSort(){  return 917;  }
   // Entry
   function connectTo($mode) {
-    $this->Lexer->addEntryPattern('<aviewer(?=.*?>.*?</aviewer>)',$mode,'plugin_aviewer');
+    $this->Lexer->addEntryPattern('<sviewer(?=.*?>.*?</sviewer>)',$mode,'plugin_sviewer');
   }
   // Exit
   function postConnect() {
-    $this->Lexer->addExitPattern('</aviewer>','plugin_aviewer');
+    $this->Lexer->addExitPattern('</sviewer>','plugin_sviewer');
   }
   // Handler
   function handle($match, $state, $pos) {
@@ -69,18 +71,47 @@ class syntax_plugin_aviewer extends DokuWiki_Syntax_Plugin {
         if ($m!=1){
           $width  = $this->getConf('width');
           $height = $this->getConf('height');
+
         }else{
-          // extra commands
-          if ($cmd[3][0]=='clear_cache'){$this->xmlCache->ClearCache();return array($state,'');}
-          if ($cmd[4][0]=='remove_dir') {$this->xmlCache->RemoveDir(); return array($state,'');}
+          // extra commands - Mod By TTy32
+          if ($cmd[16][0]=='clear_cache'){$this->xmlCache->ClearCache();return array($state,'');}
+          if ($cmd[17][0]=='remove_dir') {$this->xmlCache->RemoveDir(); return array($state,'');}
           
           // width/height/alignment
           $width  = $cmd[1][0];
           $height = $cmd[2][0];
           $align  = $cmd[3][0];
+		  
+		  // By TTy32
+		  $option_galleryStyle = strtoupper($cmd[4][0]);
+		  $option_textColor = $cmd[5][0];
+		  $option_frameColor = $cmd[6][0];
+		  $option_frameWidth = $cmd[7][0];
+		  $option_thumbPosition = strtoupper($cmd[8][0]);
+		  $option_thumbColumns = $cmd[9][0];
+		  $option_thumbRows = $cmd[10][0];
+		  $option_showOpenButton = strtoupper($cmd[11][0]);
+		  $option_showFullscreenButton = strtoupper($cmd[12][0]);
+		  $option_maxImageWidth = $cmd[13][0];
+		  $option_maxImageHeight = $cmd[14][0];
+		  $option_title = $cmd[15][0];
         }
         if(empty($align)) $align = $this->getConf('align');
-        
+
+		// By TTy32
+		if(empty($option_galleryStyle)) $option_galleryStyle = "MODERN";
+		if(empty($option_textColor)) $option_textColor = 'FFFFFF';
+		if(empty($option_frameColor)) $option_frameColor = "FFFFFF";
+		if(empty($option_frameWidth)) $option_frameWidth = "20";
+		if(empty($option_thumbPosition)) $option_thumbPosition = "LEFT";
+		if(empty($option_thumbColumns)) $option_thumbColumns = "3";
+		if(empty($option_thumbRows)) $option_thumbRows = "3";
+		if(empty($option_showOpenButton)) $option_showOpenButton = "TRUE";
+		if(empty($option_showFullscreenButton)) $option_showFullscreenButton = "TRUE";
+		if(empty($option_maxImageWidth)) $option_maxImageWidth = "640";
+		if(empty($option_maxImageHeight)) $option_maxImageHeight = "640";
+		
+		
         $sz = preg_match_all($this->listPattern,$match,$img);
         if ($sz==0){
           $img = array();
@@ -88,15 +119,49 @@ class syntax_plugin_aviewer extends DokuWiki_Syntax_Plugin {
           $img[2][0] = $ID;
           $sz = 1;
         }
-        
-        $xml.=sprintf('<?xml version="1.0" encoding="UTF-8"?>
-                       <gallery frameColor="%s" frameWidth="%d" imagePadding="%d" displayTime="%d" enableRightClickOpen="%s">',
-                       $this->getConf('frameColor'),
-                       $this->getConf('frameWidth'),
-                       $this->getConf('imagePadding'),
-                       $this->getConf('displayTime'),
-                       $this->getConf('enableRightClickOpen')?'true':'false').NL;
+		
+			// By TTy32
+			$xml.=sprintf('<?xml version="1.0" encoding="UTF-8"?>
 
+			<simpleviewergallery
+			
+			galleryStyle="%s"
+			title="%s"
+			textColor="%s"
+			frameColor="%s"
+			frameWidth="%s"
+			thumbPosition="%s"
+			thumbColumns="%s"
+			thumbRows="%s"
+			showOpenButton="%s"
+			showFullscreenButton="%s"	
+			maxImageWidth="%s"
+			maxImageHeight="%s"
+			useFlickr="false"
+			flickrUserName=""
+			flickrTags=""
+			languageCode="AUTO"
+			languageList=""		
+			imagePath="images/"
+			thumbPath="thumbs/"
+			
+			>',
+
+			$option_galleryStyle,
+			$option_title,
+			$option_textColor,
+			$option_frameColor,
+			$option_frameWidth,
+			$option_thumbPosition,
+			$option_thumbColumns,
+			$option_thumbRows,
+			$option_showOpenButton,
+			$option_showFullscreenButton,
+			$option_maxImageWidth,
+			$option_maxImageHeight);
+		
+		
+		
         for($i=0;$i<$sz;$i++){
 
           // build filepaths from an input line
@@ -136,15 +201,19 @@ class syntax_plugin_aviewer extends DokuWiki_Syntax_Plugin {
             $info    = @$jm->getBasicInfo();
             $rwidth  = floor($info['Width']*$f);
             $rheight = floor($info['Height']*$f);
-            $xml.='<image>'.NL;
-            $xml.='  <url>'.$url.'</url>'.NL;
+            
+			// By TTy32
+			$xml.='<image '.NL;
+            $xml.='imageURL="'.$url.'" ';
+			$xml.='thumbURL="'.$url.'" ';
+			$xml.='linkURL="" ';
+			$xml.='linkTarget="" >'.NL;
             $xml.='  <caption>'.$title.'</caption>'.NL;
-            $xml.='  <width>'.$rwidth.'</width>'.NL;
-            $xml.='  <height>'.$rheight.'</height>'.NL;
             $xml.='</image>'.NL;
+			
           }
         }
-        $xml.='</gallery>'.NL;
+        $xml.='</simpleviewergallery>'.NL; //By TTy32
         return array($state, array($xml,$width,$height,$align));
 
       case DOKU_LEXER_ENTER :return array($state,$match);
@@ -170,56 +239,46 @@ class syntax_plugin_aviewer extends DokuWiki_Syntax_Plugin {
             chmod($savePath,$conf['fmode']);
           }
         }
-        $fetchPath = ml('aviewer:'.$hash.'.xml','',true,'',true);
-        $renderer->doc.=sprintf('<div class="aviewer"><div class="%s">
-                                 <div id="flashcontent">AutoViewer requires JavaScript and the Flash Player. <a href="http://www.macromedia.com/go/getflashplayer/">Get Flash here.</a></div>
-                                 <script type="text/javascript" src="%s"></script>
-                                 <script type="text/javascript">
-                                   var fo = new SWFObject("%s", "autoviewer", "%s", "%s", "8", "%s");
-                                   fo.addVariable("xmlURL","%s");
-                                   fo.write("flashcontent");
-                                 </script>
-                                 </div></div>',
-                                $align,
-                                $this->swfJsPath,
-                                $this->swfLoc,
-                                $width,
-                                $height,
-                                $this->getConf('bgcolor'),
-                                $fetchPath);
+        $fetchPath = ml('sviewer:'.$hash.'.xml','',true,'',true);
+        
+		// By TTy32
+		$renderer->doc.=sprintf('<div class="sviewer">								
+
+			<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=10,0,0,0" width="%s" height="%s" id="header1" align="%s">
+			<param name="allowScriptAccess" value="sameDomain" />
+			<param name="allowFullScreen" value="true" />
+			
+			<param name="movie" value="%s?galleryURL=%s" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="scale" value="exactfit" /><param name="salign" value="t" /><param name="wmode" value="transparent" /><param name="bgcolor" value="%s" />	<embed src="%s?galleryURL=%s" menu="false" quality="best" scale="exactfit" salign="t" wmode="transparent" bgcolor="%s" width="%s" height="%s" name="header1" align="%s" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.adobe.com/go/getflashplayer" />
+			</object>
+
+			</div>',
+			
+			$width,
+			$height,
+			$align,
+			$this->swfLoc,
+			$fetchPath,
+			$this->getConf('bgcolor'),
+			$this->swfLoc,
+			$fetchPath,
+			$this->getConf('bgcolor'),
+			$width,
+			$height,
+			$align);
+		
         break;
       case DOKU_LEXER_EXIT: break;
     }
     return true;
   }
- /**
-  * Build <image> element by fetch url and caption
-  */
-  function getImageElement($url,$caption){
-    $path = $paths[$j];
-    $url = $urls[$j];
-    $title = (empty($caption))?$path:$caption;
-    if(!file_exists($path))continue;
-    $jm      = new JpegMeta($path);
-    $f       = @$jm->getResizeRatio($width,$height);
-    $info    = @$jm->getBasicInfo();
-    $rwidth  = floor($info['Width']*$f);
-    $rheight = floor($info['Height']*$f);
-    $xml.='<image>'.NL;
-    $xml.='  <url>'.$url.'</url>'.NL;
-    $xml.='  <caption>'.$title.'</caption>'.NL;
-    $xml.='  <width>'.$rwidth.'</width>'.NL;
-    $xml.='  <height>'.$rheight.'</height>'.NL;
-    $xml.='</image>'.NL;
-    return $xml;
-  }
+
  /**
   * print debug info
   */
-  function _aviewer_debug($msg){
+  function _sviewer_debug($msg){
     global $conf;
     if($conf['allowdebug']!=0){
-      echo '<!-- aviewer plugin debug:'.$msg.'-->'.NL;
+      echo '<!-- sviewer plugin debug:'.$msg.'-->'.NL;
     }
   }
 }
