@@ -1,0 +1,12 @@
+My first plugin for dokuwiki, it's a modified version (fork) of the Autoviewer plugin made by Ikuo Obataya. I modified it to work with simpleviewer, since there is no simpleviewer plugin yet. Until now ;)
+
+Greetings Randy aka TTy32
+
+/*
+description : Display Airtight Simpleviewer
+author      : TTy32 (Original by Ikuo Obataya)
+email       : randy@tty32.org
+lastupdate  : 2011-04-15
+depends     : cache (2008-03-22 or later)
+license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
+*/
