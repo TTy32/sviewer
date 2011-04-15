@@ -47,7 +47,7 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
       <sviewer>
       image files or media namespace
       </sviewer>',
-      'url'  => 'http://wiki.symplus.co.jp/computer/en/sviewer_plugin',
+      'url'  => 'http://tty32.org',
     );
   }
   function getType(){  return 'protected';  }
