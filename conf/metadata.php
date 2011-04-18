@@ -20,3 +20,4 @@ $meta['showOpenButton']      = array('onoff');
 $meta['showFullscreenButton']= array('onoff');
 $meta['maxImageWidth']       = array('numeric');
 $meta['maxImageHeight']      = array('numeric');
+$meta['captionMode']      	 = array('numeric');

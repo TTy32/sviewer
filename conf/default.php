@@ -20,3 +20,4 @@ $conf['showOpenButton']      = 1;
 $conf['showFullscreenButton']= 1;
 $conf['maxImageWidth']       = 800;
 $conf['maxImageHeight']      = 600;
+$conf['captionMode']      	 = 1;

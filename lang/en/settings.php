@@ -20,4 +20,5 @@ $lang['showOpenButton']      = 'Whether to show "Open Image in New Window" butto
 $lang['showFullscreenButton']= 'Whether to show "Go Fullscreen" button and right-click menu option';
 $lang['maxImageWidth']       = 'Width of the widest image in the gallery. Used to determine the best layout for your gallery';
 $lang['maxImageHeight']      = 'Height of tallest image in the gallery. Used to determine the best layout for your gallery';
+$lang['captionMode']      	 = 'Captionmode, 0=No caption, 1=Filename as caption, 2=Filename as caption without extension';
 

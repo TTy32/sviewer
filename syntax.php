@@ -15,7 +15,7 @@ if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 if (!class_exists('JpegMeta')) @require(DOKU_INC.'inc/JpegMeta.php');
 
 if(!file_exists(DOKU_PLUGIN.'cache/plugin_cache.php')){
-  echo '<b>sviewer plugin requires <a href="http://wiki.symplus.co.jp/computer/en/cache_plugin" target="_blank">cache plugin.</b>';
+  echo '<b>sviewer plugin requires <a href="http://www.dokuwiki.org/plugin:cache" target="_blank">cache plugin.</b>';
   exit;
 }
 if (!class_exists('plugin_cache')) @require(DOKU_PLUGIN.'cache/plugin_cache.php');
@@ -31,7 +31,8 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
     $this->xmlCache    = new plugin_cache("sviewer",'',"xml");
     
 	//By TTy32
-	$this->attrPattern = '/(\d+) (\d+)( left| right| noalign)( modern| compact| classic) (\w+) (\w+) (\d*)( left| right| bottom| top| none) (\d*) (\d*)( true| false)( true| false) (\d+) (\d+) "([^"]*)"?>|(clear_cache)>|(remove_dir)>/';
+	
+	$this->attrPattern = '/(\d+) (\d+) (\w+) (\w+) (\w+) (\w+) (\d*) (\w+) (\d*) (\d*) (\w+) (\w+) (\d+) (\d+) (\d*) "([^"]*)"?>|(clear_cache)>|(remove_dir)>/';
     
     $this->listPattern = '/\{\{([^}|]+)\|?([^}]*)\}\}/';
     $this->swfLoc      = DOKU_BASE.'lib/plugins/sviewer/simpleviewer/simpleviewer.swf';
@@ -74,8 +75,8 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
 
         }else{
           // extra commands - Mod By TTy32
-          if ($cmd[16][0]=='clear_cache'){$this->xmlCache->ClearCache();return array($state,'');}
-          if ($cmd[17][0]=='remove_dir') {$this->xmlCache->RemoveDir(); return array($state,'');}
+          if (strtolower($cmd[17][0])=='clear_cache'){$this->xmlCache->ClearCache();return array($state,'');}
+          if (strtolower($cmd[18][0])=='remove_dir') {$this->xmlCache->RemoveDir(); return array($state,'');}
           
           // width/height/alignment
           $width  = $cmd[1][0];
@@ -94,7 +95,8 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
 		  $option_showFullscreenButton = strtoupper($cmd[12][0]);
 		  $option_maxImageWidth = $cmd[13][0];
 		  $option_maxImageHeight = $cmd[14][0];
-		  $option_title = $cmd[15][0];
+		  $option_captionMode = $cmd[15][0];
+		  $option_title = $cmd[16][0];
         }
         if(empty($align)) $align = $this->getConf('align');
 
@@ -110,6 +112,7 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
 		if(empty($option_showFullscreenButton)) $option_showFullscreenButton = $this->getConf('showFullscreenButton');
 		if(empty($option_maxImageWidth)) $option_maxImageWidth = $this->getConf('maxImageWidth');
 		if(empty($option_maxImageHeight)) $option_maxImageHeight = $this->getConf('maxImageHeight');
+		if(empty($option_captionMode)) $option_captionMode = $this->getConf('captionMode');
 		if(empty($option_title)) $option_title = $this->getConf('title');
 		
 		
@@ -194,6 +197,18 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
           $fsz = count($paths);
           for($j=0;$j<$fsz;$j++){
             $path = $paths[$j];
+			/* By SuicideFunky >> */
+			$caption2 = "";
+			$filename = substr($path, strrpos($path, "/")+1, 99); //Filename with extension - By SuicideFunky
+			$filename2 = substr($filename, 1,strrpos($filename, ".")-1); //Filename without extension - By SuicideFunky
+				if ($option_captionMode == 0) { 
+					$caption2 = "";
+				} else if ($option_captionMode == 1) { 
+					$caption2 = $filename;
+				} else {
+					$caption2 = $filename2;
+				}
+			/* end */
             $url = $urls[$j];
             $title = (empty($caption))?$path:$caption;
             if(!file_exists($path))continue;
@@ -209,7 +224,7 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
 			$xml.='thumbURL="'.$url.'" ';
 			$xml.='linkURL="" ';
 			$xml.='linkTarget="" >'.NL;
-            $xml.='  <caption>'.$title.'</caption>'.NL;
+            $xml.='  <caption>'.$caption2.'</caption>'.NL;
             $xml.='</image>'.NL;
 			
           }
