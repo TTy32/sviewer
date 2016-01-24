@@ -237,7 +237,7 @@ class syntax_plugin_sviewer extends DokuWiki_Syntax_Plugin {
     }
   }
   // Render
-  function render($mode, &$renderer, $data){
+  function render($mode, Doku_Renderer $renderer, $data){
     if ($mode!='xhtml') return false;
     global $conf;
     list($state, $match) = $data;
